@@ -74,13 +74,13 @@ public class ShopServiceImpl extends ServiceImpl<ShopMapper, Shop> implements IS
         //如果店铺id为空，返回错误
         Long id = shop.getId();
         if (id == null) {
-            Result.fail("店铺id不能为空！");
+            return Result.fail("店铺id不能为空！");
         }
 
         //如果店铺不存在
         Shop shopById = getById(id);
         if (shopById == null) {
-            Result.fail("店铺不存在！");
+            return Result.fail("店铺不存在！");
         }
 
         //更新数据库
