@@ -1,4 +1,4 @@
-# Urban Discovery 城市探店
+# 本地化 Urban Discovery 城市探店
 
 > 一个基于 Spring Boot + Redis 构建的高性能本地生活服务平台，支持商户探店、社区分享、优惠券秒杀、附近搜索等功能。
 
@@ -25,11 +25,11 @@
 
 ```
 urban-discovery/
-├── src/main/java/com/hmdp/          # 业务代码
+├── src/main/java/com/urbandiscovery/          # 业务代码
 ├── src/main/resources/
 │   ├── application.yml               # 本地运行时配置（已加入 .gitignore，不上传）
 │   ├── application.yml.example       # 配置模板
-│   └── db/hmdp.sql                   # 数据库初始化脚本
+│   └── db/urbandiscovery.sql                   # 数据库初始化脚本
 ├── pom.xml
 └── README.md
 ```
@@ -47,10 +47,10 @@ urban-discovery/
 创建数据库并导入初始数据：
 
 ```sql
-CREATE DATABASE hm_dianping CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci;
+CREATE DATABASE urban_discovery CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci;
 ```
 
-执行 `src/main/resources/db/hmdp.sql` 初始化表结构与测试数据。
+执行 `src/main/resources/db/urbandiscovery.sql` 初始化表结构与测试数据。
 
 ### 3. 配置文件
 

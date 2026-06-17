@@ -8,11 +8,12 @@
         <version>2.3.12.RELEASE</version>
         <relativePath/> <!-- lookup parent from repository -->
     </parent>
-    <groupId>com.hmdp</groupId>
+    <groupId>com.urbandiscovery</groupId>
     <artifactId>urban-discovery</artifactId>
     <version>0.0.1-SNAPSHOT</version>
     <name>urban-discovery</name>
-    <description>Urban Discovery - A high-performance local lifestyle review platform based on Spring Boot &amp; Redis</description>
+    <description>Urban Discovery - A high-performance local lifestyle review platform based on Spring Boot &amp; Redis
+    </description>
     <properties>
         <java.version>1.8</java.version>
     </properties>
@@ -47,6 +48,7 @@
             <artifactId>spring-boot-starter-test</artifactId>
             <scope>test</scope>
         </dependency>
+        <!--mybatis-plus-->
         <dependency>
             <groupId>com.baomidou</groupId>
             <artifactId>mybatis-plus-boot-starter</artifactId>

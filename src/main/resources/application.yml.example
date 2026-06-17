@@ -5,7 +5,7 @@ spring:
     name: urban-discovery
   datasource:
     driver-class-name: com.mysql.jdbc.Driver
-    url: jdbc:mysql://127.0.0.1:3306/hm_dianping?useSSL=false&serverTimezone=UTC
+    url: jdbc:mysql://127.0.0.1:3306/urban_discovery?useSSL=false&serverTimezone=UTC
     username: 你的数据库用户名
     password: 你的数据库密码
   redis:
@@ -20,7 +20,7 @@ spring:
   jackson:
     default-property-inclusion: non_null # JSON处理时忽略非空字段
 mybatis-plus:
-  type-aliases-package: com.hmdp.entity # 别名扫描包
+  type-aliases-package: com.urbandiscovery.entity # 别名扫描包
 logging:
   level:
-    com.hmdp: debug
+    com.urbandiscovery: debug
