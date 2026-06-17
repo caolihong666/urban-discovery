@@ -2,12 +2,21 @@
 
 > 一个基于 Spring Boot + Redis 构建的高性能本地生活服务平台，支持商户探店、社区分享、优惠券秒杀、附近搜索等功能。
 
+## 声明
+
+**本项目为个人学习借鉴作品。**
+
+项目原型与核心思路来源于 **黑马程序员** 相关课程（原项目常被称为 "黑马点评 / hmdp"）。本人在学习过程中，基于原项目进行了本地化改造、代码重构与品牌重命名（Urban Discovery 城市探店），仅用于个人技术学习与能力沉淀，**无任何商业用途，也不存在抄袭意图**。
+
+若涉及版权问题，请联系删除或修改。
+
 ## 技术栈
 
 - **后端框架**：Spring Boot 2.3.x
 - **持久层**：MyBatis-Plus 3.4.x
 - **缓存/中间件**：Redis
 - **数据库**：MySQL 5.7+
+- **前端反向代理**：Nginx
 - **工具库**：Hutool, Lombok
 
 ## 核心功能
@@ -25,11 +34,15 @@
 
 ```
 urban-discovery/
-├── src/main/java/com/urbandiscovery/          # 业务代码
+├── src/main/java/com/urbandiscovery/     # 后端业务代码
 ├── src/main/resources/
-│   ├── application.yml               # 本地运行时配置（已加入 .gitignore，不上传）
-│   ├── application.yml.example       # 配置模板
-│   └── db/urbandiscovery.sql                   # 数据库初始化脚本
+│   ├── application.yml                   # 本地运行时配置（已加入 .gitignore，不上传）
+│   ├── application.yml.example           # 配置模板
+│   ├── mapper/                           # MyBatis-Plus Mapper XML
+│   └── db/urbandiscovery.sql             # 数据库初始化脚本
+├── nginx/
+│   ├── nginx.conf                        # Nginx 反向代理与前端入口配置
+│   └── html/urbandiscovery/              # 前端静态页面（HTML / CSS / JS）
 ├── pom.xml
 └── README.md
 ```
@@ -39,8 +52,10 @@ urban-discovery/
 ### 1. 环境准备
 
 - JDK 1.8+
+- Maven 3.6+
 - MySQL 5.7+
 - Redis 5.0+
+- Nginx 1.18+（用于前端页面与反向代理）
 
 ### 2. 数据库初始化
 
@@ -52,7 +67,7 @@ CREATE DATABASE urban_discovery CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci
 
 执行 `src/main/resources/db/urbandiscovery.sql` 初始化表结构与测试数据。
 
-### 3. 配置文件
+### 3. 后端配置
 
 复制配置模板：
 
@@ -60,9 +75,9 @@ CREATE DATABASE urban_discovery CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci
 cp src/main/resources/application.yml.example src/main/resources/application.yml
 ```
 
-根据实际情况修改 `application.yml` 中的数据库连接与 Redis 配置。
+根据实际情况修改 `application.yml` 中的数据库连接与 Redis 配置。**请勿将包含真实账号密码的 `application.yml` 提交到仓库。**
 
-### 4. 运行
+### 4. 启动后端服务
 
 ```bash
 mvn spring-boot:run
@@ -70,12 +85,39 @@ mvn spring-boot:run
 
 服务默认启动在 `http://localhost:8081`
 
+### 5. 部署前端页面（Nginx）
+
+1. 下载并解压 [Nginx](https://nginx.org/)。
+2. 将本仓库 `nginx/html/urbandiscovery/` 目录复制到 Nginx 安装目录的 `html/` 下。
+3. 将本仓库 `nginx/nginx.conf` 覆盖 Nginx 安装目录的 `conf/nginx.conf`（建议先备份原配置）。
+4. 启动 Nginx：
+   - Windows：双击 `nginx.exe` 或在命令行执行 `start nginx`
+   - Linux / macOS：`sudo nginx`
+5. 访问 `http://localhost:8080`
+
+> 前端默认通过 Nginx 反向代理访问后端接口（`location /api` 转发到 `127.0.0.1:8081`）。
+
+## 配置说明
+
+- `application.yml` 中的 `spring.datasource.url` 默认指向 `urban_discovery` 数据库。
+- `SystemConstants.IMAGE_UPLOAD_DIR` 为图片上传目录，部署时请修改为实际 Nginx 静态资源目录。
+- 生产环境请务必修改默认端口、数据库密码、Redis 密码等敏感配置，并妥善保管。
+
 ## 亮点设计
 
 - **缓存策略**：采用空值缓存、随机 TTL、互斥锁等多重手段解决缓存三件套（穿透、雪崩、击穿）。
 - **秒杀优化**：通过 Redis 预减库存、Lua 脚本保证原子性，结合异步消息队列削峰填谷。
 - **Session 共享**：基于 Redis 实现分布式登录态，支持 Token 自动续期。
 - **Feed 流**：使用 Sorted Set 实现按时间戳排序的关注流推送。
+
+## 学习记录
+
+本项目改造点：
+
+- 将原 `com.hmdp` 包结构重构为 `com.urbandiscovery`。
+- 将项目品牌统一为 "Urban Discovery 城市探店"。
+- 将数据库、SQL 脚本、前端目录、Nginx 配置等品牌相关命名统一调整。
+- 补充前端部署说明与免责声明。
 
 ## 许可证
 
