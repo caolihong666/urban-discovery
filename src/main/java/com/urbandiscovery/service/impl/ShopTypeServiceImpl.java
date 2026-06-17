@@ -1,7 +1,11 @@
 package com.urbandiscovery.service.impl;
 
+import cn.hutool.core.bean.BeanUtil;
+import cn.hutool.core.collection.CollUtil;
 import cn.hutool.core.util.StrUtil;
+import cn.hutool.json.JSON;
 import cn.hutool.json.JSONUtil;
+import com.baomidou.mybatisplus.core.toolkit.BeanUtils;
 import com.urbandiscovery.dto.Result;
 import com.urbandiscovery.entity.ShopType;
 import com.urbandiscovery.mapper.ShopTypeMapper;
@@ -33,31 +37,32 @@ public class ShopTypeServiceImpl extends ServiceImpl<ShopTypeMapper, ShopType> i
      *
      */
     @Override
-    @SuppressWarnings("unchecked")
+    @SuppressWarnings("unchecked")//抑制警告
     public Result queryTypeList() {
-        //查询Redis缓存，是否存在店铺类型信息
+        //先查redis里面的数据 key是cache:shop:type: 值是所有商铺类型信息
         String shopTypeJson = stringRedisTemplate.opsForValue().get(RedisConstants.CACHE_SHOP_TYPE_KEY);
 
-        //如果存在，返回信息
+        //如果能查到，封装成集合，返回
         if (StrUtil.isNotBlank(shopTypeJson)) {
-            return Result.ok(JSONUtil.toList(JSONUtil.parseArray(shopTypeJson), ShopType.class));
+            List<ShopType> list = JSONUtil.toList(shopTypeJson, ShopType.class);
+            return Result.ok(list);
         }
 
-        //如果不存在，查询数据库
-        List<ShopType> shopTypes = lambdaQuery()
+        //如果查不到，查询数据库,并排序
+        List<ShopType> list = lambdaQuery()
                 .orderByAsc(ShopType::getSort)
                 .list();
 
-        //如果数据库不存在，返回错误信息
-        if (shopTypes == null) {
-            return Result.fail("商铺类型不存在");
+        //如果数据库查询不到，数据不存在，返回报错信息
+        if (CollUtil.isEmpty(list)) {
+            return Result.fail("数据不存在！");
         }
 
-        //如果数据库存在，写入缓存
-        String jsonStr = JSONUtil.toJsonStr(shopTypes);
+        //如果数据库能查到,把查询到的数据写入缓存当中
+        String jsonStr = JSONUtil.toJsonStr(list);
         stringRedisTemplate.opsForValue().set(RedisConstants.CACHE_SHOP_TYPE_KEY, jsonStr);
 
-        //返回店铺类型信息
-        return Result.ok(shopTypes);
+        //返回数据
+        return Result.ok(list);
     }
 }

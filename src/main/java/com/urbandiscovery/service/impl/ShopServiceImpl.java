@@ -41,7 +41,7 @@ public class ShopServiceImpl extends ServiceImpl<ShopMapper, Shop> implements IS
 
         //判断是否存在
         if (StrUtil.isNotBlank(shopJson)) {
-            //如果存在，返回信息
+            //如果存在,转成json对象，返回信息
             Shop shop = JSONUtil.toBean(shopJson, Shop.class);
             return Result.ok(shop);
         }
