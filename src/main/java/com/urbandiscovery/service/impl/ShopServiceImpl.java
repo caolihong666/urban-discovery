@@ -71,16 +71,24 @@ public class ShopServiceImpl extends ServiceImpl<ShopMapper, Shop> implements IS
     @Override
     @Transactional
     public Result update(Shop shop) {
+        //如果店铺id为空，返回错误
+        Long id = shop.getId();
+        if (id == null) {
+            Result.fail("店铺id不能为空！");
+        }
+
+        //如果店铺不存在
+        Shop shopById = getById(id);
+        if (shopById == null) {
+            Result.fail("店铺不存在！");
+        }
+
         //更新数据库
         updateById(shop);
 
-        Long id = shop.getId();
-        if (id == null) {
-            return Result.fail("店铺id不能为空");
-        }
-
         //删除缓存
         stringRedisTemplate.delete(RedisConstants.CACHE_SHOP_KEY + id);
-        return null;
+
+        return Result.ok();
     }
 }

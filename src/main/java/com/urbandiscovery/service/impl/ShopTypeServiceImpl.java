@@ -1,11 +1,8 @@
 package com.urbandiscovery.service.impl;
 
-import cn.hutool.core.bean.BeanUtil;
 import cn.hutool.core.collection.CollUtil;
 import cn.hutool.core.util.StrUtil;
-import cn.hutool.json.JSON;
 import cn.hutool.json.JSONUtil;
-import com.baomidou.mybatisplus.core.toolkit.BeanUtils;
 import com.urbandiscovery.dto.Result;
 import com.urbandiscovery.entity.ShopType;
 import com.urbandiscovery.mapper.ShopTypeMapper;
