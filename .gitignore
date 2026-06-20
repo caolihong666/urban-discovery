@@ -38,3 +38,10 @@ application-*.yml
 application-*.properties
 *.env
 .env*
+
+### 运行时文件 ###
+# Nginx 日志、临时文件与 PID（可能包含手机号、IP 等隐私信息）
+urbandiscovery-nginx/nginx-1.18.0/logs/*
+!urbandiscovery-nginx/nginx-1.18.0/logs/.gitkeep
+urbandiscovery-nginx/nginx-1.18.0/temp/
+urbandiscovery-nginx/nginx-1.18.0/*.pid
