@@ -2,6 +2,20 @@
 
 > 一个基于 Spring Boot + Redis 构建的高性能本地生活服务平台，支持商户探店 🏪、社区分享 📝、优惠券秒杀 ⚡、附近搜索 📍 等功能。
 
+---
+
+## 👋 写给新手：这是一份能跟着做的部署指南
+
+如果你以前只写过 Java 课设，没有真正部署过项目，别担心。本文档会把每一步都拆细，包括：
+
+- 本地 Windows 上一键跑起来
+- 买一台云服务器后部署到公网
+- 常见问题怎么排查
+
+**建议先本地跑通，再尝试公网部署。** 本地跑通说明代码没问题，公网部署只是换一台服务器重复操作。
+
+---
+
 ## 🛠️ 技术栈
 
 - ☕ **后端框架**：Spring Boot 2.3.x
@@ -10,6 +24,8 @@
 - 🐬 **数据库**：MySQL 5.7+
 - 🌐 **前端反向代理**：Nginx
 - 🧰 **工具库**：Hutool, Lombok
+
+---
 
 ## ✨ 核心功能
 
@@ -21,6 +37,8 @@
 | 📝 探店笔记 | 博客发布、点赞、关注 Feed 流推送（推模式） |
 | 📍 附近搜索 | 基于 Redis GEO 的周边商户检索 |
 | 📅 用户签到 | 基于 Redis BitMap 的签到与连续签到统计 |
+
+---
 
 ## 📁 项目结构
 
@@ -39,201 +57,352 @@ urban-discovery/
 │   └── nginx-1.18.0/
 │       ├── conf/nginx.conf               # 已配置好的反向代理规则
 │       ├── html/urbandiscovery/          # 前端静态页面
-│       ├── logs/                         # 运行日志
+│       ├── logs/                         # 运行日志（不上传仓库）
 │       └── nginx.exe                     # Nginx 可执行文件
 ├── pom.xml
 └── README.md
 ```
 
-## 🚀 快速开始
+---
 
-### 1. 🧰 环境准备
+## 🚀 快速开始（本地 Windows）
 
-- JDK 1.8+
-- Maven 3.6+
-- MySQL 5.7+
-- Redis 5.0+
-- Nginx 1.18+（用于前端页面与反向代理）
+### 第 0 步：确认电脑已安装以下软件
 
-### 2. 🗄️ 数据库初始化
+| 软件 | 最低版本 | 下载/说明 |
+|------|---------|----------|
+| JDK | 1.8 | [Oracle JDK](https://www.oracle.com/java/technologies/downloads/) 或 [Adoptium](https://adoptium.net/) |
+| Maven | 3.6+ | [Maven 官网](https://maven.apache.org/download.cgi) |
+| MySQL | 5.7+ | [MySQL 官网](https://dev.mysql.com/downloads/installer/) |
+| Redis | 5.0+ | [Redis Windows 版](https://github.com/tporadowski/redis/releases) |
 
-创建数据库并导入初始数据：
+> 💡 不知道自己装没装？在命令行输入 `java -version`、`mvn -v`、`mysql --version`、`redis-cli --version`，能显示版本号就是装好了。
+
+### 第 1 步：下载本项目
+
+```bash
+# 如果你已经安装了 Git
+git clone https://github.com/caolihong666/urban-discovery.git
+
+# 如果没装 Git，直接点 GitHub 网页上的绿色 Code -> Download ZIP 也行
+```
+
+下载后用 IDEA 打开 `urban-discovery` 目录。
+
+### 第 2 步：创建数据库
+
+打开 MySQL 客户端（比如 Navicat、DBeaver，或命令行），执行：
 
 ```sql
 CREATE DATABASE urban_discovery CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci;
 ```
 
-执行 `src/main/resources/db/urbandiscovery.sql` 初始化表结构与测试数据。
-
-### 3. ⚙️ 后端配置
-
-复制配置模板：
+然后导入初始数据：
 
 ```bash
-cp src/main/resources/application.yml.example src/main/resources/application.yml
+# 在 urban-discovery 项目根目录执行
+mysql -u root -p urban_discovery < src/main/resources/db/urbandiscovery.sql
 ```
 
-根据实际情况修改 `application.yml` 中的数据库连接与 Redis 配置。**请勿将包含真实账号密码的 `application.yml` 提交到仓库。**
+执行时会提示你输入数据库密码，输入后回车即可。
 
-### 4. ▶️ 启动后端服务
+> 💡 如果提示 `mysql 不是内部或外部命令`，说明 MySQL 的 bin 目录没加到环境变量。可以直接把 SQL 文件拖到 Navicat 里执行。
+
+### 第 3 步：配置后端
+
+1. 找到 `src/main/resources/application.yml.example`
+2. 复制一份，重命名为 `application.yml`
+3. 打开 `application.yml`，修改下面几项：
+
+```yaml
+spring:
+  datasource:
+    url: jdbc:mysql://127.0.0.1:3306/urban_discovery?useSSL=false&serverTimezone=Asia/Shanghai
+    username: root              # 改成你的数据库用户名
+    password: 你的数据库密码     # 改成你的数据库密码
+  redis:
+    host: localhost
+    port: 6379
+    # 如果你的 Redis 没有密码，这行可以删掉
+    # password: 
+```
+
+> ⚠️ **重要**：`application.yml` 已经加入 `.gitignore`，不会上传到 GitHub。所以你可以放心写真实密码。但千万不要手动把它 `git add` 进去。
+
+### 第 4 步：启动 Redis
+
+Windows 下启动 Redis：
+
+```bash
+redis-server.exe redis.windows.conf
+```
+
+看到 `Ready to accept connections` 就是成功了。
+
+### 第 5 步：启动后端
+
+在 IDEA 里找到 `UrbanDiscoveryApplication.java`，右键 → Run。
+
+或者命令行：
 
 ```bash
 mvn spring-boot:run
 ```
 
-服务默认启动在 `http://localhost:8081` 🎉
+看到类似 `Started UrbanDiscoveryApplication in x.x seconds` 就是启动成功。
 
-### 5. 🌐 部署前端页面（Nginx）
+测试一下接口：
 
-本项目提供两种前端部署方式，任选其一即可：
+```bash
+curl http://localhost:8081/shop-type/list
+```
 
-#### 方式一：使用仓库内置的 Nginx 环境（Windows 推荐）✅
+如果有 JSON 数据返回，说明后端正常。
 
-仓库已集成一套配置好的 Nginx 1.18.0 环境，适合 Windows 本地快速启动：
+### 第 6 步：启动前端
 
-1. 进入 `urbandiscovery-nginx/nginx-1.18.0/` 目录。
-2. 启动 Nginx：
-   - 双击 `nginx.exe`
-   - 或在命令行执行：`start nginx.exe`
-3. 访问 `http://localhost:8080`
+#### 方式一：使用仓库内置的 Nginx（推荐）✅
 
-> 该目录下的 `conf/nginx.conf` 与仓库 `nginx/nginx.conf` 内容一致，已配置好反向代理规则。
+1. 打开文件夹 `urbandiscovery-nginx/nginx-1.18.0/`
+2. 双击 `nginx.exe`
+3. 浏览器访问 `http://localhost:8080`
 
-#### 方式二：自行安装 Nginx 🔧
+> 如果 8080 端口被占用，打开 `conf/nginx.conf`，把 `listen 8080;` 改成 `listen 8088;`，保存后重新启动 Nginx。
 
-1. 下载并解压 [Nginx](https://nginx.org/)。
-2. 将本仓库 `nginx/html/urbandiscovery/` 目录复制到 Nginx 安装目录的 `html/` 下。
-3. 将本仓库 `nginx/nginx.conf` 覆盖 Nginx 安装目录的 `conf/nginx.conf`（建议先备份原配置）。
-4. 启动 Nginx：
-   - Windows：`start nginx`
-   - Linux / macOS：`sudo nginx`
+#### 方式二：自己安装 Nginx
+
+1. 下载 [Nginx](https://nginx.org/en/download.html) 并解压
+2. 把本仓库 `nginx/html/urbandiscovery/` 复制到 Nginx 的 `html/` 目录下
+3. 用本仓库 `nginx/nginx.conf` 覆盖 Nginx 的 `conf/nginx.conf`
+4. 命令行执行 `start nginx`
 5. 访问 `http://localhost:8080`
-
-> 前端默认通过 Nginx 反向代理访问后端接口（`location /api` 转发到 `127.0.0.1:8081`）。
 
 ---
 
-## 🚀 公网部署实战指南
+## 🌍 公网部署实战指南（云服务器版）
 
-如果你希望把项目部署到云服务器上，让外网可以访问，下面是经过真实部署验证的完整流程。
+### 0. 你需要准备什么？
 
-### 1. 服务器与环境准备
+- 一台云服务器（阿里云 / 腾讯云 / 华为云都可以），系统推荐 **CentOS 7+** 或 **Ubuntu 20.04+**
+- 一个域名（可选，但强烈建议配一个，HTTPS 更安全）
+- 会基础的 Linux 命令
 
-推荐配置（最低可运行）：
+### 1. 购买服务器后的第一件事
 
-| 组件 | 推荐配置 |
-|------|---------|
-| 服务器 | 1 核 2G 以上，CentOS 7+ / Ubuntu 20.04+ |
-| JDK | 1.8+ |
-| MySQL | 5.7+ |
-| Redis | 5.0+ |
-| Nginx | 1.18+ |
+拿到服务器后，记录三个信息：
 
-安装基础依赖：
+- **公网 IP**：例如 `123.45.67.89`
+- **用户名**：通常是 `root`
+- **密码或密钥**：用于远程登录
+
+用 SSH 工具连接服务器：
 
 ```bash
-# CentOS
-yum install -y java-1.8.0-openjdk-devel nginx mariadb-server redis git
+# Windows 可以用 PowerShell、Xshell、FinalShell
+ssh root@123.45.67.89
+```
 
-# Ubuntu
+### 2. 安装基础环境
+
+连接上服务器后，按你的系统选择命令：
+
+#### CentOS
+
+```bash
+yum update -y
+yum install -y java-1.8.0-openjdk-devel nginx mariadb-server redis git
+```
+
+#### Ubuntu
+
+```bash
 apt update
 apt install -y openjdk-8-jdk nginx mysql-server redis-server git
 ```
 
-### 2. 数据库与 Redis 部署
+### 3. 启动 MySQL / Redis
 
-#### 2.1 导入数据库
+#### CentOS
 
 ```bash
+systemctl start mysqld
+systemctl enable mysqld
+systemctl start redis
+systemctl enable redis
+```
+
+#### Ubuntu
+
+```bash
+systemctl start mysql
+systemctl enable mysql
+systemctl start redis
+systemctl enable redis
+```
+
+### 4. 导入数据库
+
+```bash
+# 进入 MySQL
 mysql -u root -p
 ```
 
 ```sql
 CREATE DATABASE urban_discovery CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci;
+CREATE USER 'urban'@'%' IDENTIFIED BY '你的密码';
+GRANT ALL PRIVILEGES ON urban_discovery.* TO 'urban'@'%';
+FLUSH PRIVILEGES;
 EXIT;
 ```
 
+把项目里的 SQL 文件上传到服务器：
+
 ```bash
-mysql -u root -p urban_discovery < src/main/resources/db/urbandiscovery.sql
+# 本地执行
+scp src/main/resources/db/urbandiscovery.sql root@123.45.67.89:/root/
 ```
 
-> 💡 建议单独创建一个业务账号，不要直接用 root。
-
-#### 2.2 启动 Redis
+然后导入：
 
 ```bash
-# 启动 Redis
-redis-server --daemonize yes
+# 服务器上执行
+mysql -u urban -p urban_discovery < /root/urbandiscovery.sql
+```
 
-# 建议修改 redis.conf 绑定 0.0.0.0 并设置密码
+### 5. 给 Redis 设置密码
+
+```bash
 vim /etc/redis.conf
-# 修改：bind 0.0.0.0
-# 修改：requirepass 你的密码
 ```
 
-### 3. 后端打包与部署
+找到并修改：
 
-#### 3.1 修改生产环境配置
+```
+# bind 127.0.0.1 改为下面这行，允许外网访问（可选，看需求）
+bind 0.0.0.0
 
-将 `src/main/resources/application.yml.example` 复制为 `application.yml`，并根据服务器实际环境修改：
-
-```yaml
-server:
-  port: 8081
-spring:
-  datasource:
-    driver-class-name: com.mysql.cj.jdbc.Driver
-    url: jdbc:mysql://你的服务器IP:3306/urban_discovery?useSSL=false&serverTimezone=UTC
-    username: 业务账号
-    password: 密码
-  redis:
-    host: 你的服务器IP
-    port: 6379
-    password: Redis密码
+# 取消注释并设置密码
+requirepass 你的Redis密码
 ```
 
-> ⚠️ 如果 MySQL 是 8.0，驱动类名一定要改成 `com.mysql.cj.jdbc.Driver`。
+保存后重启：
 
-#### 3.2 打包
+```bash
+systemctl restart redis
+```
+
+> ⚠️ 如果不需要外网访问 Redis，建议只监听 `127.0.0.1`，并设置强密码。
+
+### 6. 打包后端项目
+
+在本地项目根目录执行：
 
 ```bash
 mvn clean package -DskipTests
 ```
 
-打包成功后，jar 包位于 `target/urban-discovery-0.0.1-SNAPSHOT.jar`。
+打包成功后，jar 包在：
 
-#### 3.3 上传到服务器并启动
-
-```bash
-# 上传 jar 到服务器（本地执行）
-scp target/urban-discovery-0.0.1-SNAPSHOT.jar root@你的服务器IP:/opt/urban-discovery/
-
-# 服务器上启动
-nohup java -jar /opt/urban-discovery/urban-discovery-0.0.1-SNAPSHOT.jar > /opt/urban-discovery/app.log 2>&1 &
+```
+target/urban-discovery-0.0.1-SNAPSHOT.jar
 ```
 
-查看是否启动成功：
+### 7. 上传 jar 包到服务器
+
+在服务器上创建目录：
+
+```bash
+mkdir -p /opt/urban-discovery
+```
+
+本地执行上传：
+
+```bash
+scp target/urban-discovery-0.0.1-SNAPSHOT.jar root@123.45.67.89:/opt/urban-discovery/
+```
+
+### 8. 修改生产环境配置
+
+在服务器上创建 `application.yml`：
+
+```bash
+vim /opt/urban-discovery/application.yml
+```
+
+内容如下：
+
+```yaml
+server:
+  port: 8081
+spring:
+  application:
+    name: urban-discovery
+  datasource:
+    driver-class-name: com.mysql.cj.jdbc.Driver
+    url: jdbc:mysql://127.0.0.1:3306/urban_discovery?useSSL=false&serverTimezone=Asia/Shanghai
+    username: urban
+    password: 你的数据库密码
+  redis:
+    host: 127.0.0.1
+    port: 6379
+    password: 你的Redis密码
+  jackson:
+    default-property-inclusion: non_null
+mybatis-plus:
+  type-aliases-package: com.urbandiscovery.entity
+logging:
+  level:
+    com.urbandiscovery: debug
+```
+
+> ⚠️ MySQL 8.0 一定要用 `com.mysql.cj.jdbc.Driver`，否则启动会报错。
+
+### 9. 启动后端服务
+
+简单启动（测试用）：
+
+```bash
+cd /opt/urban-discovery
+nohup java -jar urban-discovery-0.0.1-SNAPSHOT.jar --spring.config.location=application.yml > app.log 2>&1 &
+```
+
+查看日志：
 
 ```bash
 tail -f /opt/urban-discovery/app.log
+```
+
+测试接口：
+
+```bash
 curl http://127.0.0.1:8081/shop-type/list
 ```
 
-### 4. Nginx 公网部署
+### 10. 配置 Nginx（让外网能访问前端）
 
-#### 4.1 上传前端资源
+#### 10.1 上传前端页面
+
+本地执行：
 
 ```bash
-# 把前端页面复制到 Nginx 目录
-mkdir -p /usr/share/nginx/html/urbandiscovery
-cp -r nginx/html/urbandiscovery/* /usr/share/nginx/html/urbandiscovery/
+# 先把前端页面上传到服务器
+scp -r nginx/html/urbandiscovery root@123.45.67.89:/opt/
 ```
 
-#### 4.2 配置 Nginx
+服务器上移动到 Nginx 目录：
 
-将仓库中的 `nginx/nginx.conf` 上传到 `/etc/nginx/nginx.conf` 或 `/etc/nginx/conf.d/urbandiscovery.conf`。
+```bash
+mkdir -p /usr/share/nginx/html/urbandiscovery
+cp -r /opt/urbandiscovery/* /usr/share/nginx/html/urbandiscovery/
+```
 
-公网部署时，建议把 `server_name` 改成你的域名或服务器 IP：
+#### 10.2 修改 Nginx 配置
+
+```bash
+vim /etc/nginx/conf.d/urbandiscovery.conf
+```
+
+写入：
 
 ```nginx
 server {
@@ -243,57 +412,74 @@ server {
     location / {
         root   /usr/share/nginx/html/urbandiscovery;
         index  index.html index.htm;
+        try_files $uri $uri/ /index.html;
     }
 
     location /api {
         proxy_pass http://127.0.0.1:8081;
         proxy_set_header Host $host;
         proxy_set_header X-Real-IP $remote_addr;
+        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+    }
+
+    error_page   500 502 503 504  /50x.html;
+    location = /50x.html {
+        root   /usr/share/nginx/html;
     }
 }
 ```
 
-检查配置并重载：
+检查并重载：
 
 ```bash
 nginx -t
 nginx -s reload
 ```
 
-### 5. 图片上传目录配置
+### 11. 配置图片上传目录
 
-项目中 `SystemConstants.IMAGE_UPLOAD_DIR` 定义了图片上传目录。公网部署时，必须改成 Nginx 能直接访问的静态资源目录。
-
-例如：
+找到代码中的 `SystemConstants.IMAGE_UPLOAD_DIR`，改成服务器上的路径：
 
 ```java
 public static final String IMAGE_UPLOAD_DIR = "/usr/share/nginx/html/urbandiscovery/imgs/";
 ```
 
-然后确保目录存在并授权：
+然后重新打包上传。
+
+服务器上创建目录并授权：
 
 ```bash
 mkdir -p /usr/share/nginx/html/urbandiscovery/imgs
 chmod -R 755 /usr/share/nginx/html/urbandiscovery
 ```
 
-### 6. 防火墙与安全组
+### 12. 开放端口
 
-确保以下端口开放：
+云服务器需要在控制台的安全组里放行：
 
-| 端口 | 用途 |
+| 端口 | 说明 |
 |------|------|
-| 80 | HTTP 访问 |
+| 80 | HTTP |
 | 443 | HTTPS（可选） |
 | 8081 | 后端接口（建议只开放内网或 localhost） |
-| 3306 | MySQL（建议只开放内网） |
-| 6379 | Redis（建议只开放内网并设密码） |
 
-云服务器需要在安全组里放行对应端口。
+同时关闭防火墙或放行：
 
-### 7. HTTPS 部署（可选）
+```bash
+# CentOS
+firewall-cmd --zone=public --add-port=80/tcp --permanent
+firewall-cmd --zone=public --add-port=443/tcp --permanent
+firewall-cmd --reload
 
-如果有域名，建议使用 Nginx 配置 HTTPS：
+# Ubuntu
+ufw allow 80
+ufw allow 443
+ufw reload
+```
+
+### 13. 配置 HTTPS（可选但推荐）
+
+如果你有域名，可以申请免费 SSL 证书（阿里云 / 腾讯云 / Let's Encrypt）。
 
 ```nginx
 server {
@@ -320,11 +506,15 @@ server {
 }
 ```
 
-### 8. 进程保活（推荐）
+### 14. 设置后端开机自启
 
-生产环境不要用 `nohup` 裸跑，建议用 `systemd` 管理后端服务。
+创建 systemd 服务：
 
-创建 `/etc/systemd/system/urban-discovery.service`：
+```bash
+vim /etc/systemd/system/urban-discovery.service
+```
+
+写入：
 
 ```ini
 [Unit]
@@ -334,7 +524,7 @@ After=syslog.target network.target
 [Service]
 User=root
 WorkingDirectory=/opt/urban-discovery
-ExecStart=/usr/bin/java -jar /opt/urban-discovery/urban-discovery-0.0.1-SNAPSHOT.jar
+ExecStart=/usr/bin/java -jar /opt/urban-discovery/urban-discovery-0.0.1-SNAPSHOT.jar --spring.config.location=/opt/urban-discovery/application.yml
 Restart=always
 RestartSec=10
 
@@ -342,7 +532,7 @@ RestartSec=10
 WantedBy=multi-user.target
 ```
 
-启动并设为开机自启：
+启用并启动：
 
 ```bash
 systemctl daemon-reload
@@ -350,14 +540,109 @@ systemctl start urban-discovery
 systemctl enable urban-discovery
 ```
 
-### 9. 真实部署踩坑记录
+常用命令：
 
-- **MySQL 驱动问题**：MySQL 8.0 必须将 driver-class-name 改为 `com.mysql.cj.jdbc.Driver`，并升级 pom.xml 中驱动版本到 8.x。
-- **Redis 连接失败**：如果 Redis 配置了密码，application.yml 中一定要加 `password`；如果是云服务器，记得安全组放行 6379。
-- **图片上传后访问 404**：99% 是因为 `IMAGE_UPLOAD_DIR` 路径配错了，或者 Nginx 静态目录没权限。
-- **Nginx 反向代理 502**：检查后端服务是否真的在 8081 端口启动，以及防火墙是否放行。
-- **时区问题**：数据库 URL 建议加上 `serverTimezone=Asia/Shanghai`，避免时间字段偏差。
-- **端口被占用**：Windows 上 8080 经常被占用，可以改成 8088 等不常用端口。
+```bash
+systemctl status urban-discovery   # 查看状态
+systemctl stop urban-discovery     # 停止
+systemctl restart urban-discovery  # 重启
+```
+
+---
+
+## ❓ 常见问题排查
+
+### Q1：后端启动报错 `Communications link failure`
+
+**原因**：连不上 MySQL。
+
+**解决**：
+- 检查 MySQL 是否启动：`systemctl status mysqld` 或 `systemctl status mysql`
+- 检查用户名密码是否正确
+- 检查数据库名是否为 `urban_discovery`
+
+### Q2：后端启动报错 `Could not create connection to database server`
+
+**原因**：MySQL 8.0 驱动不匹配。
+
+**解决**：把 `driver-class-name` 改成 `com.mysql.cj.jdbc.Driver`，并把 `pom.xml` 中 MySQL 驱动版本升级到 8.x：
+
+```xml
+<dependency>
+    <groupId>mysql</groupId>
+    <artifactId>mysql-connector-java</artifactId>
+    <version>8.0.33</version>
+</dependency>
+```
+
+### Q3：前端页面空白或 404
+
+**原因**：Nginx 没找到前端文件，或路径不对。
+
+**解决**：
+- 检查 `root` 指向的目录是否存在
+- 检查 `nginx.conf` 是否已重载：`nginx -s reload`
+
+### Q4：前端能打开，但接口报 502
+
+**原因**：Nginx 连不上后端。
+
+**解决**：
+- 检查后端是否在 8081 端口运行：`curl http://127.0.0.1:8081/shop-type/list`
+- 检查 Nginx 配置里的 `proxy_pass` 是否正确
+
+### Q5：图片上传成功，但访问 404
+
+**原因**：`IMAGE_UPLOAD_DIR` 路径没改。
+
+**解决**：修改 `SystemConstants.IMAGE_UPLOAD_DIR` 为服务器上 Nginx 静态目录的真实路径，重新打包部署。
+
+### Q6：Windows 上 8080 端口被占用
+
+```bash
+# 查看占用 8080 的进程
+netstat -ano | findstr :8080
+
+# 结束进程（PID 替换成上面的数字）
+taskkill /PID 进程号 /F
+```
+
+---
+
+## 🔐 安全与隐私提醒
+
+### 1. 敏感文件不要提交
+
+以下文件已加入 `.gitignore`，默认不会上传：
+
+- `src/main/resources/application.yml`
+- `src/main/resources/application-*.yml`
+- `src/main/resources/application-*.properties`
+- `*.env`
+- Nginx 日志文件
+
+**如果你手动 `git add` 过这些文件，请立即停止并检查。**
+
+### 2. 生产环境密码要复杂
+
+- 数据库密码不要用 `123456`、`root` 这种
+- Redis 一定要设置密码
+- 不要用 root 账号跑应用，建议单独创建业务账号
+
+### 3. 端口暴露原则
+
+| 端口 | 建议 |
+|------|------|
+| 80 / 443 | 必须开放 |
+| 8081 | 只让 Nginx 访问，外网不要直接暴露 |
+| 3306 | 不要对外开放 |
+| 6379 | 不要对外开放 |
+
+### 4. 日志中可能有隐私信息
+
+Nginx 日志会记录用户 IP、手机号、请求参数等，**不要上传到 GitHub**。本项目已把 `urbandiscovery-nginx/nginx-1.18.0/logs/` 加入 `.gitignore`。
+
+---
 
 ## 🔧 配置说明
 
@@ -365,12 +650,16 @@ systemctl enable urban-discovery
 - `SystemConstants.IMAGE_UPLOAD_DIR` 为图片上传目录，部署时请修改为实际 Nginx 静态资源目录。
 - 生产环境请务必修改默认端口、数据库密码、Redis 密码等敏感配置，并妥善保管。
 
+---
+
 ## 💡 亮点设计
 
 - **缓存策略**：采用空值缓存、随机 TTL、互斥锁等多重手段解决缓存三件套（穿透、雪崩、击穿）。
 - **秒杀优化**：通过 Redis 预减库存、Lua 脚本保证原子性，结合异步消息队列削峰填谷。
 - **Session 共享**：基于 Redis 实现分布式登录态，支持 Token 自动续期。
 - **Feed 流**：使用 Sorted Set 实现按时间戳排序的关注流推送。
+
+---
 
 ## 📝 学习记录
 
@@ -380,7 +669,9 @@ systemctl enable urban-discovery
 - 将项目品牌统一为 "Urban Discovery 城市探店"。
 - 将数据库、SQL 脚本、前端目录、Nginx 配置等品牌相关命名统一调整。
 - 集成可直接运行的 Windows 版 Nginx 1.18.0 环境，降低本地启动门槛。
-- 补充前端部署说明与免责声明。
+- 补充前端部署说明、公网部署指南与安全隐私提醒。
+
+---
 
 ## 📄 许可证
 
