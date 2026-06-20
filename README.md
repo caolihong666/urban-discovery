@@ -77,7 +77,7 @@ urban-discovery/
 
 ## 🚀 快速开始（本地 Windows）
 
-### 第 0 步：确认电脑已安装以下软件
+### 第 0 步：🧰 确认电脑已安装以下软件
 
 | 软件 | 最低版本 | 下载/说明 |
 |------|---------|----------|
@@ -88,7 +88,7 @@ urban-discovery/
 
 > 💡 不知道自己装没装？在命令行输入 `java -version`、`mvn -v`、`mysql --version`、`redis-cli --version`，能显示版本号就是装好了。
 
-### 第 1 步：下载本项目
+### 第 1 步：📥 下载本项目
 
 ```bash
 # 如果你已经安装了 Git
@@ -99,7 +99,7 @@ git clone https://github.com/caolihong666/urban-discovery.git
 
 下载后用 IDEA 打开 `urban-discovery` 目录。
 
-### 第 2 步：创建数据库
+### 第 2 步：🗄️ 创建数据库
 
 打开 MySQL 客户端（比如 Navicat、DBeaver，或命令行），执行：
 
@@ -116,9 +116,9 @@ mysql -u root -p urban_discovery < src/main/resources/db/urbandiscovery.sql
 
 执行时会提示你输入数据库密码，输入后回车即可。
 
-> 💡 如果提示 `mysql 不是内部或外部命令`，说明 MySQL 的 bin 目录没加到环境变量。可以直接把 SQL 文件拖到 Navicat 里执行。
+> 🩺 如果提示 `mysql 不是内部或外部命令`，说明 MySQL 的 bin 目录没加到环境变量。可以直接把 SQL 文件拖到 Navicat 里执行。
 
-### 第 3 步：配置后端
+### 第 3 步：⚙️ 配置后端
 
 1. 找到 `src/main/resources/application.yml.example`
 2. 复制一份，重命名为 `application.yml`
@@ -139,7 +139,7 @@ spring:
 
 > ⚠️ **重要**：`application.yml` 已经加入 `.gitignore`，不会上传到 GitHub。所以你可以放心写真实密码。但千万不要手动把它 `git add` 进去。
 
-### 第 4 步：启动 Redis
+### 第 4 步：🔴 启动 Redis
 
 Windows 下启动 Redis：
 
@@ -147,9 +147,9 @@ Windows 下启动 Redis：
 redis-server.exe redis.windows.conf
 ```
 
-看到 `Ready to accept connections` 就是成功了。
+看到 `Ready to accept connections` 就是成功了 🎉
 
-### 第 5 步：启动后端
+### 第 5 步：☕ 启动后端
 
 在 IDEA 里找到 `UrbanDiscoveryApplication.java`，右键 → Run。
 
@@ -159,7 +159,7 @@ redis-server.exe redis.windows.conf
 mvn spring-boot:run
 ```
 
-看到类似 `Started UrbanDiscoveryApplication in x.x seconds` 就是启动成功。
+看到类似 `Started UrbanDiscoveryApplication in x.x seconds` 就是启动成功 ✅
 
 测试一下接口：
 
@@ -167,9 +167,9 @@ mvn spring-boot:run
 curl http://localhost:8081/shop-type/list
 ```
 
-如果有 JSON 数据返回，说明后端正常。
+如果有 JSON 数据返回，说明后端正常 🎯
 
-### 第 6 步：启动前端
+### 第 6 步：🌐 启动前端
 
 #### 方式一：使用仓库内置的 Nginx（推荐）✅
 
@@ -177,9 +177,9 @@ curl http://localhost:8081/shop-type/list
 2. 双击 `nginx.exe`
 3. 浏览器访问 `http://localhost:8080`
 
-> 如果 8080 端口被占用，打开 `conf/nginx.conf`，把 `listen 8080;` 改成 `listen 8088;`，保存后重新启动 Nginx。
+> 🚧 如果 8080 端口被占用，打开 `conf/nginx.conf`，把 `listen 8080;` 改成 `listen 8088;`，保存后重新启动 Nginx。
 
-#### 方式二：自己安装 Nginx
+#### 方式二：🔧 自己安装 Nginx
 
 1. 下载 [Nginx](https://nginx.org/en/download.html) 并解压
 2. 把本仓库 `nginx/html/urbandiscovery/` 复制到 Nginx 的 `html/` 目录下
@@ -191,13 +191,13 @@ curl http://localhost:8081/shop-type/list
 
 ## 🌍 公网部署实战指南（云服务器版）
 
-### 0. 你需要准备什么？
+### 0. ☁️ 你需要准备什么？
 
 - 一台云服务器（阿里云 / 腾讯云 / 华为云都可以），系统推荐 **CentOS 7+** 或 **Ubuntu 20.04+**
 - 一个域名（可选，但强烈建议配一个，HTTPS 更安全）
 - 会基础的 Linux 命令
 
-### 1. 购买服务器后的第一件事
+### 1. 🖥️ 购买服务器后的第一件事
 
 拿到服务器后，记录三个信息：
 
@@ -212,7 +212,7 @@ curl http://localhost:8081/shop-type/list
 ssh root@123.45.67.89
 ```
 
-### 2. 安装基础环境
+### 2. 🛠️ 安装基础环境
 
 连接上服务器后，按你的系统选择命令：
 
@@ -230,7 +230,7 @@ apt update
 apt install -y openjdk-8-jdk nginx mysql-server redis-server git
 ```
 
-### 3. 启动 MySQL / Redis
+### 3. 🚀 启动 MySQL / Redis
 
 #### CentOS
 
@@ -250,7 +250,7 @@ systemctl start redis
 systemctl enable redis
 ```
 
-### 4. 导入数据库
+### 4. 🗄️ 导入数据库
 
 ```bash
 # 进入 MySQL
@@ -279,7 +279,7 @@ scp src/main/resources/db/urbandiscovery.sql root@123.45.67.89:/root/
 mysql -u urban -p urban_discovery < /root/urbandiscovery.sql
 ```
 
-### 5. 给 Redis 设置密码
+### 5. 🔒 给 Redis 设置密码
 
 ```bash
 vim /etc/redis.conf
@@ -301,9 +301,9 @@ requirepass 你的Redis密码
 systemctl restart redis
 ```
 
-> ⚠️ 如果不需要外网访问 Redis，建议只监听 `127.0.0.1`，并设置强密码。
+> 🔐 如果不需要外网访问 Redis，建议只监听 `127.0.0.1`，并设置强密码。
 
-### 6. 打包后端项目
+### 6. 📦 打包后端项目
 
 在本地项目根目录执行：
 
@@ -317,7 +317,7 @@ mvn clean package -DskipTests
 target/urban-discovery-0.0.1-SNAPSHOT.jar
 ```
 
-### 7. 上传 jar 包到服务器
+### 7. 📤 上传 jar 包到服务器
 
 在服务器上创建目录：
 
@@ -331,7 +331,7 @@ mkdir -p /opt/urban-discovery
 scp target/urban-discovery-0.0.1-SNAPSHOT.jar root@123.45.67.89:/opt/urban-discovery/
 ```
 
-### 8. 修改生产环境配置
+### 8. 📝 修改生产环境配置
 
 在服务器上创建 `application.yml`：
 
@@ -365,9 +365,9 @@ logging:
     com.urbandiscovery: debug
 ```
 
-> ⚠️ MySQL 8.0 一定要用 `com.mysql.cj.jdbc.Driver`，否则启动会报错。
+> 🚨 MySQL 8.0 一定要用 `com.mysql.cj.jdbc.Driver`，否则启动会报错。
 
-### 9. 启动后端服务
+### 9. ▶️ 启动后端服务
 
 简单启动（测试用）：
 
@@ -388,9 +388,9 @@ tail -f /opt/urban-discovery/app.log
 curl http://127.0.0.1:8081/shop-type/list
 ```
 
-### 10. 配置 Nginx（让外网能访问前端）
+### 10. 🌐 配置 Nginx（让外网能访问前端）
 
-#### 10.1 上传前端页面
+#### 10.1 📤 上传前端页面
 
 本地执行：
 
@@ -406,7 +406,7 @@ mkdir -p /usr/share/nginx/html/urbandiscovery
 cp -r /opt/urbandiscovery/* /usr/share/nginx/html/urbandiscovery/
 ```
 
-#### 10.2 修改 Nginx 配置
+#### 10.2 ⚙️ 修改 Nginx 配置
 
 ```bash
 vim /etc/nginx/conf.d/urbandiscovery.conf
@@ -446,7 +446,7 @@ nginx -t
 nginx -s reload
 ```
 
-### 11. 配置图片上传目录
+### 11. 🖼️ 配置图片上传目录
 
 找到代码中的 `SystemConstants.IMAGE_UPLOAD_DIR`，改成服务器上的路径：
 
@@ -463,7 +463,7 @@ mkdir -p /usr/share/nginx/html/urbandiscovery/imgs
 chmod -R 755 /usr/share/nginx/html/urbandiscovery
 ```
 
-### 12. 开放端口
+### 12. 🔓 开放端口
 
 云服务器需要在控制台的安全组里放行：
 
@@ -487,7 +487,7 @@ ufw allow 443
 ufw reload
 ```
 
-### 13. 配置 HTTPS（可选但推荐）
+### 13. 🔐 配置 HTTPS（可选但推荐）
 
 如果你有域名，可以申请免费 SSL 证书（阿里云 / 腾讯云 / Let's Encrypt）。
 
@@ -516,7 +516,7 @@ server {
 }
 ```
 
-### 14. 设置后端开机自启
+### 14. 🔄 设置后端开机自启
 
 创建 systemd 服务：
 
